@@ -1,0 +1,23 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "target": "ES2020",                    // Specifies the ECMAScript target version
+    "module": "CommonJS",                  // Use CommonJS module system
+    "moduleResolution": "Node",            // Use Node.js-style module resolution
+    "outDir": "./dist",                    // Output directory for compiled .js files
+    "rootDir": "./src",                    // Root directory of .ts source files
+    "strict": true,                        // Enable strict type-checking
+    "esModuleInterop": true,               // Enables interoperability between CommonJS and ES modules
+    "skipLibCheck": true,                  // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
+    "allowSyntheticDefaultImports": true,   // Allow default imports from modules with no default export
+    "noImplicitAny": true,                 // Disallow implicit any types
+    "strictNullChecks": true,              // Enable strict null checks
+    "strictFunctionTypes": true,           // Enable strict function type checking
+    "noUnusedLocals": true,                // Report errors on unused locals
+    "noUnusedParameters": true             // Report errors on unused parameters
+  },
+  "include": ["src/**/*"],                 // Include all .ts files in the src directory
+  "exclude": ["node_modules", "dist"] 
+}
