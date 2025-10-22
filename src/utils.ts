@@ -1,4 +1,28 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
+import { AnalyzedString } from './types';
+
+// Apply filters to a list of strings
+export const applyFilters = (data: AnalyzedString[], filters: any): AnalyzedString[] => {
+  let filteredData = data;
+
+  if (filters.is_palindrome !== undefined) {
+    filteredData = filteredData.filter(s => s.properties.is_palindrome === filters.is_palindrome);
+  }
+  if (filters.min_length !== undefined) {
+    filteredData = filteredData.filter(s => s.properties.length >= filters.min_length);
+  }
+  if (filters.max_length !== undefined) {
+    filteredData = filteredData.filter(s => s.properties.length <= filters.max_length);
+  }
+  if (filters.word_count !== undefined) {
+    filteredData = filteredData.filter(s => s.properties.word_count === filters.word_count);
+  }
+  if (filters.contains_character !== undefined) {
+    filteredData = filteredData.filter(s => s.value.includes(filters.contains_character));
+  }
+
+  return filteredData;
+};
 
 // Compute SHA-256 hash
 export const sha256 = (str: string): string => {
@@ -20,41 +44,48 @@ export const charFrequency = (str: string): Record<string, number> => {
   return freq;
 };
 
-// Parse natural language query (basic heuristic)
+// Parse natural language query (more robust)
 export const parseNaturalQuery = (query: string): Partial<Record<string, any>> => {
   const lower = query.toLowerCase();
   const filters: any = {};
 
-  // Word count
-  if (lower.includes('single word')) filters.word_count = 1;
-  else if (lower.includes('two words')) filters.word_count = 2;
-
   // Palindrome
-  if (lower.includes('palindrom') || lower.includes('palindrome')) {
+  if (lower.includes('palindrom')) {
     filters.is_palindrome = true;
   }
 
+  // Word count
+  const wordCountMatch = lower.match(/(\d+|single|two|three|four|five) word/);
+  if (wordCountMatch) {
+    const countMap: Record<string, number> = { single: 1, two: 2, three: 3, four: 4, five: 5 };
+    filters.word_count = countMap[wordCountMatch[1]] || parseInt(wordCountMatch[1], 10);
+  }
+
   // Length
-  const longerMatch = lower.match(/longer than (\d+)/);
-  if (longerMatch) {
-    filters.min_length = parseInt(longerMatch[1], 10) + 1;
+  const minLengthMatch = lower.match(/(longer|greater) than (\d+)/);
+  if (minLengthMatch) {
+    filters.min_length = parseInt(minLengthMatch[2], 10) + 1;
+  }
+  const maxLengthMatch = lower.match(/(shorter|less) than (\d+)/);
+  if (maxLengthMatch) {
+    filters.max_length = parseInt(maxLengthMatch[2], 10) - 1;
   }
 
   // Contains character
-  const vowelMatch = lower.includes('first vowel') || lower.includes('vowel');
-  const letterZ = lower.includes('letter z') || lower.includes('contains z');
-  if (vowelMatch) {
-    filters.contains_character = 'a'; // heuristic
-  } else if (letterZ) {
-    filters.contains_character = 'z';
+  if (lower.includes('vowel')) {
+    // A simple heuristic for vowels
+    // For simplicity, we'll just check for 'a' as in the original code
+    // A more advanced implementation could check for any vowel.
+    filters.contains_character = 'a';
   } else {
-    const charMatch = lower.match(/contains the letter ([a-z])/);
-    if (charMatch) filters.contains_character = charMatch[1];
+    const charMatch = lower.match(/containing the letter "?([a-z])"?/);
+    if (charMatch) {
+      filters.contains_character = charMatch[1];
+    }
   }
 
-  // Validate: no conflicting filters
   if (Object.keys(filters).length === 0) {
-    throw new Error('Unable to parse query');
+    throw new Error('Unable to parse query into any known filters.');
   }
 
   return filters;

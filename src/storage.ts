@@ -1,4 +1,5 @@
 import { AnalyzedString } from './types';
+import { sha256 } from './utils';
 
 // Simple in-memory store (key = sha256 hash)
 const store: Record<string, AnalyzedString> = {};
@@ -12,7 +13,7 @@ export const getStringById = (id: string): AnalyzedString | undefined => {
 };
 
 export const getStringByValue = (value: string): AnalyzedString | undefined => {
-  const id = require('./utils').sha256(value);
+  const id = sha256(value);
   return store[id];
 };
 
